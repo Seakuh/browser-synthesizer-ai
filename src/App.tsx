@@ -1,90 +1,146 @@
-import ml5 from "ml5";
-import * as p5Types from "p5";
-import React from "react";
-import { ReactP5Wrapper } from "react-p5-wrapper";
+import React, { useEffect, useRef, useState } from "react";
+import * as handpose from "@tensorflow-models/handpose";
+import "@tensorflow/tfjs";
 
-// Global variables for p5.js
-let osc: p5Types.Oscillator;
-let fft: p5Types.FFT;
-let handpose: any;
-let video: p5Types.Element;
-let predictions: any[] = [];
+// FrequencyBar-Komponente
+const FrequencyBar: React.FC<{ frequency: number }> = ({ frequency }) => {
+  const minFreq = 100; // Mindestfrequenz
+  const maxFreq = 2000; // Maximalfrequenz
+  const percentage = ((frequency - minFreq) / (maxFreq - minFreq)) * 100;
 
-const Sketch = (p5: p5Types) => {
-  p5.setup = () => {
-    p5.createCanvas(800, 400);
-    video = p5.createCapture(p5.VIDEO);
-    video.size(640, 480);
-    video.hide();
-
-    // Initialize Handpose model
-    handpose = ml5.handpose(video.elt, () => {
-      console.log("Handpose model loaded");
-    });
-
-    // Listen for new predictions
-    handpose.on("predict", (results: any) => {
-      predictions = results;
-    });
-
-    // Synthesizer setup
-    osc = new p5.Oscillator("sine");
-    fft = new p5.FFT();
-    osc.amp(0);
-    osc.start();
-  };
-
-  p5.draw = () => {
-    p5.background(30);
-    p5.image(video, 0, 0, 320, 240);
-
-    if (predictions.length > 0) {
-      const hand = predictions[0];
-      const [x, y] = hand.landmarks[9]; // Use the tip of the index finger
-      const freq = p5.map(x, 0, p5.width, 100, 1000);
-      const amp = p5.map(y, 0, p5.height, 1, 0);
-
-      // Update synthesizer
-      osc.freq(freq);
-      osc.amp(amp, 0.1);
-
-      // Draw hand landmarks
-      p5.stroke(0, 255, 0);
-      p5.strokeWeight(4);
-      hand.landmarks.forEach(([x, y]: [number, number]) => {
-        p5.point(x, y);
-      });
-
-      // Display frequency and amplitude
-      p5.fill(255);
-      p5.textSize(16);
-      p5.text(`Frequency: ${freq.toFixed(2)} Hz`, 20, 300);
-      p5.text(`Amplitude: ${amp.toFixed(2)}`, 20, 320);
-    }
-
-    // Draw Oscilloscope
-    const waveform = fft.waveform();
-    p5.stroke(255, 255, 0);
-    p5.noFill();
-    p5.beginShape();
-    for (let i = 0; i < waveform.length; i++) {
-      const x = p5.map(i, 0, waveform.length, 0, p5.width);
-      const y = p5.map(waveform[i], -1, 1, 0, p5.height);
-      p5.vertex(x, y);
-    }
-    p5.endShape();
-  };
-
-  p5.mouseReleased = () => {
-    osc.amp(0, 0.5); // Fade out sound when mouse is released
-  };
+  return (
+    <div style={{ marginTop: "20px", width: "80%", margin: "0 auto" }}>
+      <div
+        style={{
+          height: "20px",
+          backgroundColor: "#ddd",
+          borderRadius: "10px",
+          overflow: "hidden",
+          position: "relative",
+        }}
+      >
+        <div
+          style={{
+            height: "100%",
+            width: `${percentage}%`,
+            backgroundColor: "#4caf50",
+            transition: "width 0.1s ease-in-out",
+          }}
+        ></div>
+      </div>
+      <p style={{ textAlign: "center", marginTop: "10px" }}>
+        Frequency: {frequency.toFixed(2)} Hz
+      </p>
+    </div>
+  );
 };
 
 const App: React.FC = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [model, setModel] = useState<handpose.HandPose>();
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [oscillator, setOscillator] = useState<OscillatorNode | null>(null);
+  const [frequency, setFrequency] = useState(440); // Initialfrequenz
+
+  useEffect(() => {
+    // Webcam einrichten und Handpose-Modell laden
+    const loadModelAndWebcam = async () => {
+      const video = videoRef.current;
+      if (video) {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        video.play();
+
+        const loadedModel = await handpose.load();
+        setModel(loadedModel);
+      }
+    };
+
+    loadModelAndWebcam();
+
+    // Audio initialisieren
+    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    setAudioContext(audioCtx);
+
+    const osc = audioCtx.createOscillator();
+    osc.type = "sine"; // Wellenform: Sinus
+    osc.frequency.setValueAtTime(440, audioCtx.currentTime); // Standardfrequenz (440 Hz)
+    osc.start();
+
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.value = 0.2; // Lautstärke
+
+    osc.connect(gainNode).connect(audioCtx.destination);
+    setOscillator(osc);
+
+    return () => {
+      osc.stop();
+      osc.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    // Hand erkennen und Ton ändern
+    const detectHands = async () => {
+      if (model && videoRef.current && canvasRef.current) {
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext("2d");
+
+        if (!ctx) return;
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const detect = async () => {
+          const predictions = await model.estimateHands(video);
+
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          if (predictions.length > 0) {
+            const hand = predictions[0];
+            const z = hand.landmarks[9][2]; // Z-Koordinate des Mittelfingers
+
+            if (oscillator) {
+              // Berechne Frequenz basierend auf Z-Koordinate
+              const newFrequency = 440 - z * 100; // Näher = höhere Frequenz
+              const clampedFrequency = Math.max(100, Math.min(newFrequency, 2000));
+
+              oscillator.frequency.setValueAtTime(
+                clampedFrequency,
+                audioContext!.currentTime
+              );
+              setFrequency(clampedFrequency); // Frequenz aktualisieren
+            }
+
+            // Zeichne Handlandmarks
+            hand.landmarks.forEach(([x, y]) => {
+              ctx.beginPath();
+              ctx.arc(x, y, 5, 0, Math.PI * 2);
+              ctx.fillStyle = "lime";
+              ctx.fill();
+            });
+          }
+
+          requestAnimationFrame(detect);
+        };
+
+        detect();
+      }
+    };
+
+    detectHands();
+  }, [model, oscillator, audioContext]);
+
   return (
-    <div>
-      <h1>Gesture Synthesizer with ml5.js</h1>
-      <ReactP5Wrapper sketch={Sketch} />
+    <div style={{ textAlign: "center" }}>
+      <h1>Handpose Detection mit Ton</h1>
+      <video ref={videoRef} style={{ display: "none" }} />
+      <canvas ref={canvasRef} style={{ border: "1px solid black" }} />
+      {/* FrequencyBar-Komponente einfügen */}
+      <FrequencyBar frequency={frequency} />
     </div>
   );
 };
