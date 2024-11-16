@@ -43,7 +43,16 @@ const App: React.FC = () => {
   const [oscillator, setOscillator] = useState<OscillatorNode | null>(null);
   const [frequency, setFrequency] = useState(440); // Initialfrequenz
 
+  const handleStart = () => {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    setAudioContext(audioContext);
+  };
+
   useEffect(() => {
+    if (!audioContext) {
+      return;
+    }
+
     // Webcam einrichten und Handpose-Modell laden
     const loadModelAndWebcam = async () => {
       const video = videoRef.current;
@@ -59,26 +68,21 @@ const App: React.FC = () => {
 
     loadModelAndWebcam();
 
-    // Audio initialisieren
-    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    setAudioContext(audioCtx);
-
-    const osc = audioCtx.createOscillator();
-    osc.type = "sine"; // Wellenform: Sinus
-    osc.frequency.setValueAtTime(440, audioCtx.currentTime); // Standardfrequenz (440 Hz)
+    const osc = audioContext.createOscillator();
+    osc.type = "sawtooth"; 
+    osc.frequency.setValueAtTime(440, audioContext.currentTime); // Standardfrequenz (440 Hz)
     osc.start();
 
-    const gainNode = audioCtx.createGain();
+    const gainNode = audioContext.createGain();
     gainNode.gain.value = 0.2; // Lautstärke
 
-    osc.connect(gainNode).connect(audioCtx.destination);
     setOscillator(osc);
 
     return () => {
       osc.stop();
       osc.disconnect();
     };
-  }, []);
+  }, [audioContext]);
 
   useEffect(() => {
     // Hand erkennen und Ton ändern
@@ -101,21 +105,27 @@ const App: React.FC = () => {
 
           if (predictions.length > 0) {
             const hand = predictions[0];
-            const z = hand.landmarks[9][2]; // Z-Koordinate des Mittelfingers
+            
+            // Thumb position
+            const [x1, y1] = hand.landmarks[4];
+            // Index finger position
+            const [x2, y2] = hand.landmarks[8];
+
+            // Calculate distance between thumb and index finger
+            const x = x2 - x1;
+            const y = y2 - y1;
+            const z = Math.sqrt(x * x + y * y);
 
             if (oscillator) {
-              // Berechne Frequenz basierend auf Z-Koordinate
-              const newFrequency = 440 - z * 100; // Näher = höhere Frequenz
+              // Update oscillator frequency based on distance
+              const newFrequency = 100 + (z / 400) * 2000;
               const clampedFrequency = Math.max(100, Math.min(newFrequency, 2000));
 
-              oscillator.frequency.setValueAtTime(
-                clampedFrequency,
-                audioContext!.currentTime
-              );
-              setFrequency(clampedFrequency); // Frequenz aktualisieren
+              oscillator.frequency.setValueAtTime(clampedFrequency, audioContext!.currentTime);
+              setFrequency(clampedFrequency); // Update frequency state
             }
 
-            // Zeichne Handlandmarks
+            // Draw hand landmarks
             hand.landmarks.forEach(([x, y]) => {
               ctx.beginPath();
               ctx.arc(x, y, 5, 0, Math.PI * 2);
@@ -141,6 +151,7 @@ const App: React.FC = () => {
       <canvas ref={canvasRef} style={{ border: "1px solid black" }} />
       {/* FrequencyBar-Komponente einfügen */}
       <FrequencyBar frequency={frequency} />
+      <button onClick={handleStart}>Start</button>
     </div>
   );
 };
