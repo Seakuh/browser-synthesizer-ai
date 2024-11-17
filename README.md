@@ -1,51 +1,77 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# **SynthWave: Gestenbasierter Synthesizer mit Oszilloskop**
 
-Currently, two official plugins are available:
+![SynthWave Logo](./public/browser-synthesizer-ai.png)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+**SynthWave** ist eine React-Anwendung, die mit TypeScript entwickelt wurde und die Bibliotheken p5.js und ml5.js integriert. Sie ermöglicht die Erkennung von Handgesten über die Webcam zur Steuerung eines Synthesizers. Ein Oszilloskop visualisiert die erzeugten Klänge in Echtzeit.
 
-## Expanding the ESLint configuration
+## Inhaltsverzeichnis
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- [**SynthWave: Gestenbasierter Synthesizer mit Oszilloskop**](#synthwave-gestenbasierter-synthesizer-mit-oszilloskop)
+  - [Inhaltsverzeichnis](#inhaltsverzeichnis)
+  - [Installation](#installation)
+  - [Verwendung](#verwendung)
+  - [Projektstruktur](#projektstruktur)
+  - [Abhängigkeiten](#abhängigkeiten)
+  - [Mitwirkende](#mitwirkende)
+  - [Danksagungen](#danksagungen)
 
-- Configure the top-level `parserOptions` property like this:
+## Installation
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+Stellen Sie sicher, dass Node.js (Version 20.15.1 oder höher) und Yarn (Version 4.3.1 oder höher) auf Ihrem System installiert sind.
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+1. **Repository klonen:**
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+   ```bash
+   git clone https://github.com/IhrBenutzername/synthwave.git
+   cd synthwave
+   ```
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
-# browser-synthesizer-ai
+2. **Abhängigkeiten installieren:**
+
+   ```bash
+   yarn install
+   ```
+
+## Verwendung
+
+1. **Entwicklungsserver starten:**
+
+   ```bash
+   yarn dev
+   ```
+
+2. **Anwendung im Browser öffnen:**
+
+   Öffnen Sie Ihren Browser und navigieren Sie zu `http://localhost:5173`.
+
+3. **Webcam-Zugriff erlauben:**
+
+   Beim ersten Start wird die Anwendung um Zugriff auf Ihre Webcam bitten. Erlauben Sie den Zugriff, um die Gestenerkennung zu aktivieren.
+
+## Projektstruktur
+
+Die wichtigsten Dateien und Verzeichnisse sind:
+
+- `src/`
+  - `App.tsx`: Hauptkomponente der Anwendung mit der Implementierung des Synthesizers und des Oszilloskops.
+  - `index.tsx`: Einstiegspunkt der React-Anwendung.
+- `public/`
+  - `index.html`: Haupt-HTML-Datei der Anwendung.
+
+## Abhängigkeiten
+
+Die Anwendung verwendet folgende Hauptbibliotheken:
+
+- [React](https://reactjs.org/): JavaScript-Bibliothek für Benutzeroberflächen.
+- [TypeScript](https://www.typescriptlang.org/): Typsicheres JavaScript.
+- [p5.js](https://p5js.org/): Bibliothek für kreative Programmierung.
+- [ml5.js](https://ml5js.org/): Einfach zu verwendende Machine-Learning-Bibliothek für den Webbrowser.
+
+## Mitwirkende
+
+- **Fessler Tobi** - [GitHub-Profil des Mitwirkenden](https://github.com/TobiFessler)
+
+## Danksagungen
+
+Dieses Projekt wurde inspiriert von den Möglichkeiten, die p5.js und ml5.js bieten, um kreative Anwendungen mit Gestenerkennung und Echtzeit-Audio zu entwickeln. Besonderer Dank gilt den Entwicklern dieser Bibliotheken für ihre Arbeit.

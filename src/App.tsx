@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
 import * as handpose from "@tensorflow-models/handpose";
 import "@tensorflow/tfjs";
+import React, { useEffect, useRef, useState } from "react";
 
 // FrequencyBar-Komponente
 const FrequencyBar: React.FC<{ frequency: number }> = ({ frequency }) => {
@@ -44,7 +44,8 @@ const App: React.FC = () => {
   const [frequency, setFrequency] = useState(440); // Initialfrequenz
 
   const handleStart = () => {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const audioContext = new (window.AudioContext ||
+      (window as any).webkitAudioContext)();
     setAudioContext(audioContext);
   };
 
@@ -57,7 +58,9 @@ const App: React.FC = () => {
     const loadModelAndWebcam = async () => {
       const video = videoRef.current;
       if (video) {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
         video.srcObject = stream;
         video.play();
 
@@ -68,9 +71,14 @@ const App: React.FC = () => {
 
     loadModelAndWebcam();
 
-    const osc = audioContext.createOscillator();
-    osc.type = "sawtooth"; 
-    osc.frequency.setValueAtTime(440, audioContext.currentTime); // Standardfrequenz (440 Hz)
+    // Audio initialisieren
+    const audioCtx = new (window.AudioContext ||
+      (window as any).webkitAudioContext)();
+    setAudioContext(audioCtx);
+
+    const osc = audioCtx.createOscillator();
+    osc.type = "sine"; // Wellenform: Sinus
+    osc.frequency.setValueAtTime(440, audioCtx.currentTime); // Standardfrequenz (440 Hz)
     osc.start();
 
     const gainNode = audioContext.createGain();
@@ -105,7 +113,7 @@ const App: React.FC = () => {
 
           if (predictions.length > 0) {
             const hand = predictions[0];
-            
+
             // Thumb position
             const [x1, y1] = hand.landmarks[4];
             // Index finger position
@@ -117,11 +125,17 @@ const App: React.FC = () => {
             const z = Math.sqrt(x * x + y * y);
 
             if (oscillator) {
-              // Update oscillator frequency based on distance
-              const newFrequency = 100 + (z / 400) * 2000;
-              const clampedFrequency = Math.max(100, Math.min(newFrequency, 2000));
+              // Berechne Frequenz basierend auf Z-Koordinate
+              const newFrequency = 440 - z * 100; // Näher = höhere Frequenz
+              const clampedFrequency = Math.max(
+                100,
+                Math.min(newFrequency, 2000)
+              );
 
-              oscillator.frequency.setValueAtTime(clampedFrequency, audioContext!.currentTime);
+              oscillator.frequency.setValueAtTime(
+                clampedFrequency,
+                audioContext!.currentTime
+              );
               setFrequency(clampedFrequency); // Update frequency state
             }
 
@@ -147,11 +161,11 @@ const App: React.FC = () => {
   return (
     <div style={{ textAlign: "center" }}>
       <h1>Handpose Detection mit Ton</h1>
+      {/* FrequencyBar-Komponente einfügen */}
       <video ref={videoRef} style={{ display: "none" }} />
       <canvas ref={canvasRef} style={{ border: "1px solid black" }} />
-      {/* FrequencyBar-Komponente einfügen */}
       <FrequencyBar frequency={frequency} />
-      <button onClick={handleStart}>Start</button>
+      {/* <TechnoController></TechnoController> */}
     </div>
   );
 };
