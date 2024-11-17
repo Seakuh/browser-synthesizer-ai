@@ -76,6 +76,8 @@ const App: React.FC = () => {
     const gainNode = audioContext.createGain();
     gainNode.gain.value = 0.2; // Lautstärke
 
+    osc.connect(gainNode).connect(audioContext.destination);
+
     setOscillator(osc);
 
     return () => {
