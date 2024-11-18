@@ -15,7 +15,6 @@ const TechnoController: React.FC = () => {
       envelope: { attack: 0.001, decay: 0.2, sustain: 0 },
     }).toDestination();
     const hihat = new Tone.MetalSynth({
-      frequency: 200,
       envelope: { attack: 0.001, decay: 0.3, release: 0.1 },
       harmonicity: 5.1,
       modulationIndex: 32,
