@@ -1,15 +1,31 @@
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: linear-gradient(to bottom, #1f1f1f, #121212); /* Angenehmer Hintergrund */
+  color: white;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #282a2e;
 }
 
-.content {
-  text-align: center;
+.appContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  max-width: 600px;
+  min-height: 300px;
+  background: rgba(255, 255, 255, 0.1); /* Leicht transparenter Hintergrund */
+  border-radius: 20px; /* Abgerundete Ecken */
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4); /* Moderner Schatten */
+  backdrop-filter: blur(10px); /* Blur-Effekt */
   padding: 20px;
-  background-color: black;
+  text-align: center; /* Inhalt zentriert */
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
 }

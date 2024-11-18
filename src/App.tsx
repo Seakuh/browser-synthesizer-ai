@@ -1,11 +1,12 @@
-import React from 'react';
-import HandDetection from './components/HandDetection';
+import React from "react";
+import "./App.css";
+import HandDetection from "./components/HandDetection";
 
 const App: React.FC = () => {
   return (
-      <div>
-        <HandDetection />
-      </div>
+    <div className="appContainer">
+      <HandDetection />
+    </div>
   );
 };
 
