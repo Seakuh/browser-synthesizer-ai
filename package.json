@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "yarn build",
+    "deploy": "bash deploy.sh"
   },
   "dependencies": {
     "@mediapipe/hands": "^0.4.1675469240",

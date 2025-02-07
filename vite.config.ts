@@ -8,7 +8,6 @@ export default defineConfig({
     outDir: "build", // Zielverzeichnis
     assetsDir: "assets", // Ordner für statische Assets
     rollupOptions: {
-      external: ['@mediapipe/hands'],
       output: {
         manualChunks: {
           'vendor': [
@@ -17,11 +16,26 @@ export default defineConfig({
             '@tensorflow/tfjs',
             '@tensorflow/tfjs-backend-webgl',
             '@tensorflow/tfjs-core',
-            'tone'
+            'tone',
+            '@mediapipe/hands'
           ]
-        }
+        },
+        // Optimize chunk names
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     },
     chunkSizeWarningLimit: 1000,
+    // Enable source maps for debugging
+    sourcemap: true,
+    // Optimize build
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    }
   },
 });
