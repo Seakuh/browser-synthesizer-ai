@@ -12,13 +12,13 @@ export default defineConfig({
       output: {
         manualChunks: {
           'vendor': [
-            // Common libraries that don't change often
             'react',
             'react-dom',
-            'react-router-dom',
-            // Add other major dependencies here
-          ],
-          // You can add more chunks as needed
+            '@tensorflow/tfjs',
+            '@tensorflow/tfjs-backend-webgl',
+            '@tensorflow/tfjs-core',
+            'tone'
+          ]
         }
       }
     },
