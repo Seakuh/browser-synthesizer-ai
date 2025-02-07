@@ -1,1 +1,1 @@
-{"root":["./src/App.tsx","./src/TechnoController.tsx","./src/main.tsx","./src/types.ts","./src/vite-env.d.ts","./src/components/HandDetection.tsx","./src/components/HandPointsCanvas.tsx","./src/components/Sound.tsx","./src/hooks/useHandPoseDetection.ts"],"errors":true,"version":"5.6.3"}
+{"root":["./src/App.tsx","./src/TechnoController.tsx","./src/main.tsx","./src/types.ts","./src/vite-env.d.ts","./src/components/HandDetection.tsx","./src/components/HandPointsCanvas.tsx","./src/components/Sound.tsx","./src/hooks/useHandPoseDetection.ts"],"version":"5.6.3"}

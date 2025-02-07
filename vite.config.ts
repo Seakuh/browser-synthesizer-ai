@@ -7,5 +7,9 @@ export default defineConfig({
   build: {
     outDir: "build", // Zielverzeichnis
     assetsDir: "assets", // Ordner für statische Assets
+    rollupOptions: {
+      external: ['@mediapipe/hands']
+    }
+
   },
 });
