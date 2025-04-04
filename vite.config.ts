@@ -30,7 +30,7 @@ export default defineConfig({
     // Enable source maps for debugging
     sourcemap: true,
     // Optimize build
-    minify: 'terser',
+    minify: 'esbuild',
     terserOptions: {
       compress: {
         drop_console: true,
