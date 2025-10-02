@@ -9,6 +9,16 @@ export const useHandPoseDetection = () => {
     const [hands, setHands] = useState<Hand[]>([]);
 
     useEffect(() => {
+        let isActive = true;
+
+        const detectHands = async (detector: handPoseDetection.HandDetector) => {
+            if (videoRef.current && isActive) {
+                const detectedHands = await detector.estimateHands(videoRef.current);
+                setHands(detectedHands);
+                requestAnimationFrame(() => detectHands(detector));
+            }
+        };
+
         const loadModelAndDetect = async () => {
             const model = handPoseDetection.SupportedModels.MediaPipeHands;
             const detectorConfig: MediaPipeHandsMediaPipeModelConfig = {
@@ -18,7 +28,7 @@ export const useHandPoseDetection = () => {
             };
             const detector = await handPoseDetection.createDetector(model, detectorConfig);
 
-            if (videoRef.current) {
+            if (videoRef.current && isActive) {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({
                         video: { width: 640, height: 480, facingMode: 'user' }
@@ -26,8 +36,10 @@ export const useHandPoseDetection = () => {
                     videoRef.current.srcObject = stream;
 
                     videoRef.current.onloadedmetadata = () => {
-                        videoRef.current?.play();
-                        detectHands(detector);
+                        if (videoRef.current && isActive) {
+                            videoRef.current.play();
+                            detectHands(detector);
+                        }
                     };
                 } catch (error) {
                     console.error('Camera access error:', error);
@@ -35,21 +47,16 @@ export const useHandPoseDetection = () => {
             }
         };
 
-        const detectHands = async (detector: any) => {
-            if (videoRef.current) {
-                const detectedHands = await detector.estimateHands(videoRef.current);
-                setHands(detectedHands);
-                requestAnimationFrame(() => detectHands(detector));
+        loadModelAndDetect();
+
+        return () => {
+            isActive = false;
+            if (videoRef.current?.srcObject) {
+                const stream = videoRef.current.srcObject as MediaStream;
+                stream.getTracks().forEach(track => track.stop());
             }
         };
-
-    // Only load model when the window is fully loaded
-    window.addEventListener('load', loadModelAndDetect);
-
-    return () => {
-      window.removeEventListener('load', loadModelAndDetect);
-    };
-    }, [videoRef.current]);
+    }, []);
 
     return { videoRef, hands };
 };
