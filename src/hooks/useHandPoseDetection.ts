@@ -19,12 +19,19 @@ export const useHandPoseDetection = () => {
             const detector = await handPoseDetection.createDetector(model, detectorConfig);
 
             if (videoRef.current) {
-                videoRef.current.srcObject = await navigator.mediaDevices.getUserMedia({video: true});
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: { width: 640, height: 480, facingMode: 'user' }
+                    });
+                    videoRef.current.srcObject = stream;
 
-                videoRef.current.onloadedmetadata = () => {
-                    videoRef.current?.play();
-                    detectHands(detector);
-                };
+                    videoRef.current.onloadedmetadata = () => {
+                        videoRef.current?.play();
+                        detectHands(detector);
+                    };
+                } catch (error) {
+                    console.error('Camera access error:', error);
+                }
             }
         };
 

@@ -10,7 +10,13 @@ const HandDetection: FC = () => {
         <div>
             <h1>Hand Detection</h1>
             <div style={{ position: 'relative' }}>
-                <video ref={videoRef} autoPlay muted></video>
+                <video
+                    ref={videoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    style={{ width: '640px', height: '480px', display: 'block' }}
+                ></video>
                 <HandPointsCanvas hands={hands} videoRef={videoRef} />
                 <Sound hands={hands} />
             </div>
